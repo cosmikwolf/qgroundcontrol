@@ -18,6 +18,8 @@ import QGroundControl.FlightMap     1.0
 import QGroundControl.FlightDisplay 1.0
 import QGroundControl.Palette       1.0
 
+import QGroundControl.Vehicle       1.0
+
 ColumnLayout {
     id:         root
     spacing:    ScreenTools.defaultFontPixelHeight / 4
@@ -54,6 +56,42 @@ ColumnLayout {
             size:                   _innerRadius * 2
             vehicle:                globals.activeVehicle
             anchors.verticalCenter: parent.verticalCenter
+        }
+    }  
+
+    QGCButton {
+        property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
+
+        id: winchEmergency
+        height:             _outerRadius * 2
+        Layout.fillWidth:   true
+        text: "Emergency release"
+        onClicked: {
+            _activeVehicle.sendCommand(42, 42600, 1, 1, 0, 1, 1)
+        }
+    }
+
+    QGCButton {
+        property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
+
+        id: winchDeliver
+        height:             _outerRadius * 2
+        Layout.fillWidth:   true
+        text: "Deliver payload"
+        onClicked: {
+            _activeVehicle.sendCommand(42, 42600, 1, 1, 4, 1, 1)
+        }
+    }
+
+    QGCButton {
+        property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
+
+        id: winchRetract
+        height:             _outerRadius * 2
+        Layout.fillWidth:   true
+        text: "Retract winch"
+        onClicked: {
+            _activeVehicle.sendCommand(42, 42600, 1, 1, 6, 1, 1)
         }
     }
 
