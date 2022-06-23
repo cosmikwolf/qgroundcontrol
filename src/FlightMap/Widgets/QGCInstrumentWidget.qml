@@ -19,6 +19,7 @@ import QGroundControl.FlightDisplay 1.0
 import QGroundControl.Palette       1.0
 
 import QGroundControl.Vehicle       1.0
+import QtQuick.Window               2.2
 
 ColumnLayout {
     id:         root
@@ -59,39 +60,89 @@ ColumnLayout {
         }
     }  
 
-    QGCButton {
-        property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
+    // Rectangle {
+    //     id:                 fillRect
+    //     Layout.fillWidth:   true
+    //     color:              "green"
+    //     height:             Window.height - 350
+    // }
 
+    property int _currentCommand: -1
+
+    QGCButton {
         id: winchEmergency
-        height:             _outerRadius * 2
+        anchors.top: visualInstrument.bottom
+        anchors.topMargin: Window.height - 370
+        property var _active: false
+        height:             _outerRadius
         Layout.fillWidth:   true
         text: "Emergency release"
+        background: Rectangle {
+            color:  "red"
+        }
         onClicked: {
-            _activeVehicle.sendCommand(42, 42600, 1, 1, 0, 1, 1)
+            _currentCommand = 0;
+            winchDeliver.checked = winchDeliver._active = false;
+            winchRetract.checked = winchRetract._active = false;
+            if (_active) {checked = false; slider.visible = false}
+            else {checked = true; slider.visible = true; slider.confirmText = qsTr("Emergency release winch")}
+            _active = !_active
         }
     }
 
     QGCButton {
-        property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
-
         id: winchDeliver
-        height:             _outerRadius * 2
+        anchors.top: winchEmergency.bottom
+        anchors.topMargin: 5
+        property var _active: false
+        height:             _outerRadius
         Layout.fillWidth:   true
         text: "Deliver payload"
         onClicked: {
-            _activeVehicle.sendCommand(42, 42600, 1, 1, 4, 1, 1)
+            _currentCommand = 4;
+            winchEmergency.checked = winchEmergency._active = false;
+            winchRetract.checked = winchRetract._active = false;
+            if (_active) {checked = false; slider.visible = false}
+            else {checked = true; slider.visible = true; slider.confirmText = qsTr("Perform payload drop")}
+            _active = !_active
         }
     }
 
     QGCButton {
-        property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
-
         id: winchRetract
-        height:             _outerRadius * 2
+        anchors.top: winchDeliver.bottom
+        anchors.topMargin: 5
+        property var _active: false 
+        height:             _outerRadius
         Layout.fillWidth:   true
         text: "Retract winch"
         onClicked: {
-            _activeVehicle.sendCommand(42, 42600, 1, 1, 6, 1, 1)
+            _currentCommand = 6;
+            winchEmergency.checked = winchEmergency._active = false;
+            winchDeliver.checked = winchDeliver._active = false;
+            if (_active) {checked = false; slider.visible = false}
+            else {checked = true; slider.visible = true; slider.confirmText = qsTr("Perform winch retract")}
+            _active = !_active
+        }
+    }
+
+    SliderSwitch {
+        id:                             slider
+        anchors.top:                    winchRetract.bottom
+        anchors.topMargin:              5
+        property var _activeVehicle:    QGroundControl.multiVehicleManager.activeVehicle
+        confirmText:                    qsTr("Perform winch action")
+        Layout.fillWidth:               true
+        visible:                        false
+        onAccept: {
+            if (_currentCommand != -1) {
+                winchDeliver.checked = winchDeliver._active = false
+                winchEmergency.checked = winchEmergency._active = false
+                winchRetract.checked = winchRetract._active = false
+                _activeVehicle.sendCommand(42, 42600, 1, 1, _currentCommand, 1, 1)
+                _currentCommand = -1
+                visible = false
+            }
         }
     }
 
