@@ -60,13 +60,6 @@ ColumnLayout {
         }
     }  
 
-    // Rectangle {
-    //     id:                 fillRect
-    //     Layout.fillWidth:   true
-    //     color:              "green"
-    //     height:             Window.height - 350
-    // }
-
     property int _currentCommand: -1
 
     QGCButton {

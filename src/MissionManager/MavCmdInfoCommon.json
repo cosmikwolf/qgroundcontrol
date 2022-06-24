@@ -1097,19 +1097,6 @@
             "category":     "Camera",
             "friendlyEdit": true
         },
-        {
-            "id":           2503,
-            "rawName":      "MAV_CMD_DO_WINCH",
-            "friendlyName": "Drop winch payload",
-            "description":  "Drop winch payload.",
-            "category":     "Camera",
-            "param2": {
-                "label":            "Winch action",
-                "enumStrings":      "Drop payload,Retract",
-                "enumValues":       "4,6",
-                "default":          4
-            }
-        },
         { "id": 2600, "rawName": "MAV_CMD_CONTROL_HIGH_LATENCY", "friendlyName": "Control high latency link" },
         { "id": 2800, "rawName": "MAV_CMD_PANORAMA_CREATE", "friendlyName": "Create panorama" },
         {
@@ -1123,6 +1110,19 @@
                 "default":          3,
                 "enumStrings":      "Multi Rotor,Fixed Wing",
                 "enumValues":       "3,4"
+            }
+        },
+        {
+            "id":                   42600,
+            "rawName":              "MAV_CMD_DO_WINCH",
+            "friendlyName":         "Drop winch payload",
+            "description":          "Drop winch payload.",
+            "friendlyEdit":         true,
+            "param2": {
+                "label":            "Winch action",
+                "default":          4,
+                "enumStrings":      "Drop,Retract",
+                "enumValues":       "4,6"
             }
         },
         {
