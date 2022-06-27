@@ -20,6 +20,7 @@ import QGroundControl.Palette       1.0
 
 import QGroundControl.Vehicle       1.0
 import QtQuick.Window               2.2
+import MAVLink                      1.0
 
 ColumnLayout {
     id:         root
@@ -60,62 +61,68 @@ ColumnLayout {
         }
     }  
 
-    property int _currentCommand: -1
+    enum WinchCommands {
+        RELEASE = 0,
+        DELIVER = 4,
+        RETRACT = 6
+    }
+    
+    property int _currentCommand:   -1
+    property int _WinchNodeID:      42
+    property int _MAVLink_CMD_ID:   42600
+
+    function clearAllButtons() {
+        winchDeliver.checked = winchDeliver._active = false;
+        winchRetract.checked = winchRetract._active = false;
+        winchEmergency.checked = winchEmergency._active = false;
+    }
 
     QGCButton {
-        id: winchEmergency
-        anchors.top: visualInstrument.bottom
-        anchors.topMargin: Window.height - 370
-        property var _active: false
-        height:             _outerRadius
-        Layout.fillWidth:   true
-        text: "Emergency release"
-        background: Rectangle {
-            color:  "red"
-        }
-        onClicked: {
-            _currentCommand = 0;
-            winchDeliver.checked = winchDeliver._active = false;
-            winchRetract.checked = winchRetract._active = false;
-            if (_active) {checked = false; slider.visible = false}
-            else {checked = true; slider.visible = true; slider.confirmText = qsTr("Emergency release winch")}
-            _active = !_active
+        id:                         winchEmergency
+        anchors.top:                visualInstrument.bottom
+        anchors.topMargin:          Window.height - 370
+        height:                     _outerRadius
+        Layout.fillWidth:           true
+        text:                       "Emergency release"
+        background:                 Rectangle {color:  "red"}
+        checkable:                  true
+        onClicked:  {
+            _currentCommand = QGCInstrumentWidget.WinchCommands.RELEASE;
+            winchDeliver.checked = winchRetract.checked = false;
+            if (checked) {slider.visible = true; slider.confirmText = qsTr("Emergency release winch")}
+            else {slider.visible = false}
         }
     }
 
     QGCButton {
-        id: winchDeliver
-        anchors.top: winchEmergency.bottom
-        anchors.topMargin: 5
-        property var _active: false
-        height:             _outerRadius
-        Layout.fillWidth:   true
-        text: "Deliver payload"
+        id:                         winchDeliver
+        anchors.top:                winchEmergency.bottom
+        anchors.topMargin:          5
+        height:                     _outerRadius
+        Layout.fillWidth:           true
+        text:                       "Deliver payload"
+        checkable:                  true
         onClicked: {
-            _currentCommand = 4;
-            winchEmergency.checked = winchEmergency._active = false;
-            winchRetract.checked = winchRetract._active = false;
-            if (_active) {checked = false; slider.visible = false}
-            else {checked = true; slider.visible = true; slider.confirmText = qsTr("Perform payload drop")}
-            _active = !_active
+            _currentCommand = QGCInstrumentWidget.WinchCommands.DELIVER;
+            winchEmergency.checked = winchRetract.checked = false;
+            if (checked) {slider.visible = true; slider.confirmText = qsTr("Perform payload drop")}
+            else {slider.visible = false}
         }
     }
 
     QGCButton {
-        id: winchRetract
-        anchors.top: winchDeliver.bottom
-        anchors.topMargin: 5
-        property var _active: false 
-        height:             _outerRadius
-        Layout.fillWidth:   true
-        text: "Retract winch"
+        id:                         winchRetract
+        anchors.top:                winchDeliver.bottom
+        anchors.topMargin:          5
+        height:                     _outerRadius
+        Layout.fillWidth:           true
+        text:                       "Retract winch"
+        checkable:                  true
         onClicked: {
-            _currentCommand = 6;
-            winchEmergency.checked = winchEmergency._active = false;
-            winchDeliver.checked = winchDeliver._active = false;
-            if (_active) {checked = false; slider.visible = false}
-            else {checked = true; slider.visible = true; slider.confirmText = qsTr("Perform winch retract")}
-            _active = !_active
+            _currentCommand = QGCInstrumentWidget.WinchCommands.RETRACT;
+            winchEmergency.checked = winchDeliver.checked = false;
+            if (checked) {slider.visible = true; slider.confirmText = qsTr("Perform winch retract")}
+            else {slider.visible = false}
         }
     }
 
@@ -123,19 +130,15 @@ ColumnLayout {
         id:                             slider
         anchors.top:                    winchRetract.bottom
         anchors.topMargin:              5
-        property var _activeVehicle:    QGroundControl.multiVehicleManager.activeVehicle
-        confirmText:                    qsTr("Perform winch action")
-        Layout.fillWidth:               true
+        property var _vehicle:          QGroundControl.multiVehicleManager.activeVehicle
         visible:                        false
+        confirmText:                    qsTr("Not visible")
+        Layout.fillWidth:               true
         onAccept: {
-            if (_currentCommand != -1) {
-                winchDeliver.checked = winchDeliver._active = false
-                winchEmergency.checked = winchEmergency._active = false
-                winchRetract.checked = winchRetract._active = false
-                _activeVehicle.sendCommand(42, 42600, 1, 1, _currentCommand, 1, 1)
-                _currentCommand = -1
-                visible = false
-            }
+            winchDeliver.checked = winchEmergency.checked = winchRetract.checked = false;
+            _vehicle.sendCommand(_WinchNodeID, _MAVLink_CMD_ID, 1, 1, _currentCommand, 1, 1);
+            _currentCommand = -1;
+            visible = false;
         }
     }
 
