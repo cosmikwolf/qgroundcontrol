@@ -73,12 +73,11 @@ ColumnLayout {
 
     QGCButton {
         id:                         winchEmergency
-        anchors.top:                visualInstrument.bottom
-        anchors.topMargin:          Window.height - 370
         backRadius:                 10
         showBorder:                 true
         height:                     _outerRadius
         Layout.fillWidth:           true
+        Layout.topMargin:           Window.height - 370
         text:                       "Emergency release"
         background:                 Rectangle {
             color:                  "red"
@@ -104,8 +103,6 @@ ColumnLayout {
 
     QGCButton {
         id:                         winchDeliver
-        anchors.top:                winchEmergency.bottom
-        anchors.topMargin:          5
         backRadius:                 10
         showBorder:                 true
         height:                     _outerRadius
@@ -134,8 +131,6 @@ ColumnLayout {
 
     QGCButton {
         id:                         winchRetract
-        anchors.top:                winchDeliver.bottom
-        anchors.topMargin:          5
         backRadius:                 10
         showBorder:                 true
         height:                     _outerRadius
@@ -159,8 +154,6 @@ ColumnLayout {
 
     SliderSwitch {
         id:                             slider
-        anchors.top:                    winchRetract.bottom
-        anchors.topMargin:              5
         property var _vehicle:          QGroundControl.multiVehicleManager.activeVehicle
         visible:                        false
         confirmText:                    qsTr("Not visible")
