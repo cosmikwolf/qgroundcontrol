@@ -86,6 +86,12 @@ ColumnLayout {
         text:                       "Emergency release"
         background:                 Rectangle {color:  "red"}
         checkable:                  true
+        Image {
+            id: alert
+            source: "/qmlimages/Yield.svg"
+            height: parent.height
+            width: height
+        }
         onClicked:  {
             _currentCommand = QGCInstrumentWidget.WinchCommands.RELEASE;
             winchDeliver.checked = winchRetract.checked = false;
@@ -102,6 +108,17 @@ ColumnLayout {
         Layout.fillWidth:           true
         text:                       "Deliver payload"
         checkable:                  true
+        Image {
+            id: downArrow
+            source: "/qmlimages/ArrowDirection.svg"
+            height: parent.height
+            width: height
+            transform: Rotation {
+                origin.x:       downArrow.width/2
+                origin.y:       downArrow.height/2
+                angle:          180
+            }
+        }
         onClicked: {
             _currentCommand = QGCInstrumentWidget.WinchCommands.DELIVER;
             winchEmergency.checked = winchRetract.checked = false;
@@ -118,6 +135,12 @@ ColumnLayout {
         Layout.fillWidth:           true
         text:                       "Retract winch"
         checkable:                  true
+        Image {
+            id: upArrow
+            source: "/qmlimages/ArrowDirection.svg"
+            height: parent.height
+            width: height
+        }
         onClicked: {
             _currentCommand = QGCInstrumentWidget.WinchCommands.RETRACT;
             winchEmergency.checked = winchDeliver.checked = false;
