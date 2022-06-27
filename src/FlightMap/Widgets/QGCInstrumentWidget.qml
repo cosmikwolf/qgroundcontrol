@@ -71,26 +71,28 @@ ColumnLayout {
     property int _WinchNodeID:      42
     property int _MAVLink_CMD_ID:   42600
 
-    function clearAllButtons() {
-        winchDeliver.checked = winchDeliver._active = false;
-        winchRetract.checked = winchRetract._active = false;
-        winchEmergency.checked = winchEmergency._active = false;
-    }
-
     QGCButton {
         id:                         winchEmergency
         anchors.top:                visualInstrument.bottom
         anchors.topMargin:          Window.height - 370
+        backRadius:                 10
+        showBorder:                 true
         height:                     _outerRadius
         Layout.fillWidth:           true
         text:                       "Emergency release"
-        background:                 Rectangle {color:  "red"}
+        background:                 Rectangle {
+            color:                  "red"
+            radius:                 10
+            border.color:           "white"
+            border.width:           1
+        }
         checkable:                  true
         Image {
-            id: alert
-            source: "/qmlimages/Yield.svg"
-            height: parent.height
-            width: height
+            id:                     alert
+            source:                 "/qmlimages/Yield.svg"
+            height:                 parent.height
+            width:                  height
+            x:                      10
         }
         onClicked:  {
             _currentCommand = QGCInstrumentWidget.WinchCommands.RELEASE;
@@ -104,19 +106,22 @@ ColumnLayout {
         id:                         winchDeliver
         anchors.top:                winchEmergency.bottom
         anchors.topMargin:          5
+        backRadius:                 10
+        showBorder:                 true
         height:                     _outerRadius
         Layout.fillWidth:           true
         text:                       "Deliver payload"
         checkable:                  true
         Image {
-            id: downArrow
-            source: "/qmlimages/ArrowDirection.svg"
-            height: parent.height
-            width: height
+            id:                     downArrow
+            source:                 "/qmlimages/ArrowDirection.svg"
+            height:                 parent.height
+            width:                  height
+            x:                      10
             transform: Rotation {
-                origin.x:       downArrow.width/2
-                origin.y:       downArrow.height/2
-                angle:          180
+                origin.x:           downArrow.width/2
+                origin.y:           downArrow.height/2
+                angle:              180
             }
         }
         onClicked: {
@@ -131,15 +136,18 @@ ColumnLayout {
         id:                         winchRetract
         anchors.top:                winchDeliver.bottom
         anchors.topMargin:          5
+        backRadius:                 10
+        showBorder:                 true
         height:                     _outerRadius
         Layout.fillWidth:           true
         text:                       "Retract winch"
         checkable:                  true
         Image {
-            id: upArrow
-            source: "/qmlimages/ArrowDirection.svg"
-            height: parent.height
-            width: height
+            id:                     upArrow
+            source:                 "/qmlimages/ArrowDirection.svg"
+            height:                 parent.height
+            width:                  height
+            x:                      10
         }
         onClicked: {
             _currentCommand = QGCInstrumentWidget.WinchCommands.RETRACT;
