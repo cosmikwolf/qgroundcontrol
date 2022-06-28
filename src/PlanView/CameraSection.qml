@@ -26,7 +26,7 @@ Column {
         id:             cameraSectionHeader
         anchors.left:   parent.left
         anchors.right:  parent.right
-        text:           qsTr("WINCH CONTROL")
+        text:           qsTr("Camera")
         checked:        false
     }
 

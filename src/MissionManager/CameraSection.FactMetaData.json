@@ -7,7 +7,7 @@
     "name":             "CameraAction",
     "shortDesc": "Specify whether the camera should take photos or video",
     "type":             "uint32",
-    "enumStrings":      "No change,CONTROL WINCH,Take photos (time),Take photos (distance),Stop taking photos,Start recording video,Stop recording video",
+    "enumStrings":      "No change,Take photo,Take photos (time),Take photos (distance),Stop taking photos,Start recording video,Stop recording video",
     "enumValues":       "0,6,1,2,3,4,5",
     "default":     0
 },
@@ -55,7 +55,7 @@
     "name":             "CameraMode",
     "shortDesc": "Specify whether the camera should switch to Photo, Video or Survey mode",
     "type":             "uint32",
-    "enumStrings":      "DROP WINCH,HOME WINCH,Survey",
+    "enumStrings":      "Photo,Video,Survey",
     "enumValues":       "0,1,2",
     "default":     0
 }
