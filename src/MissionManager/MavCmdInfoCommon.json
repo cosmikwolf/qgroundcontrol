@@ -1115,8 +1115,8 @@
         {
             "id":                   42600,
             "rawName":              "MAV_CMD_DO_WINCH",
-            "friendlyName":         "Drop winch payload",
-            "description":          "Drop winch payload.",
+            "friendlyName":         "Perform winch action",
+            "description":          "Perform winch action.",
             "category":             "Winch",
             "friendlyEdit":         true,
             "param2": {
