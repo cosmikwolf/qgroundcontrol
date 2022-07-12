@@ -25,13 +25,6 @@ Rectangle {
         WINCH_RETRACT = 6
     }
 
-    property var    _currentWinchCommand:   null
-    //MAV_COMP_ID_USER18(42) is the chosen component for winches
-	// since no winch defaults exist yet in the MAVLink standard.
-    property int    _winch_node_id:         42    
-    // The QML MAVLink enum doesn't include MAV_CMD_DO_WINCH(42600).
-    // Setting it explicitly. See src/comm/QGCMAVLink.h for details.           
-    property int    _winch_mavlink_cmd_id:  42600
     property real   _topBottomMargin:       (width * 0.05) / 2
 
     Layout.fillWidth:               true
@@ -41,7 +34,7 @@ Rectangle {
         backRadius:                 10
         showBorder:                 true
         width:                      parent.width
-        text:                       "Emergency release"
+        text:                       "EMERGENCY RELEASE"
         background:                 Rectangle {
             color:                  "red"
             radius:                 10
@@ -61,7 +54,7 @@ Rectangle {
         onClicked:  winchRelax()
 
         function winchRelax() {
-            _currentWinchCommand = WinchControl.WinchCommands.WINCH_RELAXED;
+            slider._currentWinchCommand = WinchControl.WinchCommands.WINCH_RELAXED;
             winchDeliverBtn.checked = false;
             winchRetractBtn.checked = false;
             if (checked) {
@@ -78,7 +71,7 @@ Rectangle {
         backRadius:                 10
         showBorder:                 true
         width:                      parent.width
-        text:                       "Deliver payload"
+        text:                       "DELIVER"
         checkable:                  true
         anchors.bottom:             winchRetractBtn.top
         anchors.bottomMargin:       _topBottomMargin
@@ -97,7 +90,7 @@ Rectangle {
         onClicked:  winchDeliver()
         
         function winchDeliver() {
-            _currentWinchCommand = WinchControl.WinchCommands.WINCH_DELIVER;
+            slider._currentWinchCommand = WinchControl.WinchCommands.WINCH_DELIVER;
             winchEmergencyBtn.checked = false;
             winchRetractBtn.checked = false;
             if (checked) {
@@ -114,7 +107,7 @@ Rectangle {
         backRadius:                 10
         showBorder:                 true
         width:                      parent.width
-        text:                       "Retract winch"
+        text:                       "RETRACT"
         checkable:                  true
         anchors.bottom:             slider.top
         anchors.bottomMargin:       _topBottomMargin
@@ -128,7 +121,7 @@ Rectangle {
         onClicked: winchRetract()
         
         function winchRetract() {
-            _currentWinchCommand = WinchControl.WinchCommands.WINCH_RETRACT;
+            slider._currentWinchCommand = WinchControl.WinchCommands.WINCH_RETRACT;
             winchEmergencyBtn.checked = false;
             winchDeliverBtn.checked = false;
             if (checked) {
@@ -141,21 +134,30 @@ Rectangle {
     }
 
     SliderSwitch {
-        id:                             slider
-        property var _vehicle:          QGroundControl.multiVehicleManager.activeVehicle
-        visible:                        false
-        width:                          parent.width
-        confirmText:                    qsTr("Not visible")
-        anchors.bottom:                 parent.bottom
-        anchors.bottomMargin:           2 * _topBottomMargin
+        id:                                     slider
+        property var _vehicle:                  QGroundControl.multiVehicleManager.activeVehicle
+        visible:                                false
+        width:                                  parent.width
+        confirmText:                            qsTr("Not visible")
+        anchors.bottom:                         parent.bottom
+        anchors.bottomMargin:                   2 * _topBottomMargin
+        
+        property var    _currentWinchCommand:   null
         onAccept: sendWinchCommand()
         
         function sendWinchCommand() {
             winchDeliverBtn.checked = false;
             winchEmergencyBtn.checked = false;
             winchRetractBtn.checked = false;
-            if (_currentWinchCommand !== null) {
-                _vehicle.sendCommand(_winch_node_id, _winch_mavlink_cmd_id, 1, 1, _currentWinchCommand, 1, 1);
+            if (_currentWinchCommand !== null && _vehicle !== null) {
+                //MAV_COMP_ID_USER18(42) is the chosen component for winches
+                // since no winch defaults exist yet in the MAVLink standard.
+                // The QML MAVLink enum doesn't include MAV_CMD_DO_WINCH(42600).
+                // Setting it explicitly. See src/comm/QGCMAVLink.h for details.           
+                _vehicle.sendCommand(42, 42600, 1, 1, _currentWinchCommand, 1, 1);
+            }
+            else {
+                console.log("Cannot send winch command.")
             }
             _currentWinchCommand = null;
             visible = false;
