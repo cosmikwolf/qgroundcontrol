@@ -21,7 +21,6 @@ import QGroundControl.Palette       1.0
 ColumnLayout {
     id:         root
     spacing:    ScreenTools.defaultFontPixelHeight / 4
-    height:     availableHeight
 
     property real   _innerRadius:           (width - (_topBottomMargin * 3)) / 4
     property real   _outerRadius:           _innerRadius + _topBottomMargin
@@ -34,7 +33,6 @@ ColumnLayout {
         id:                 visualInstrument
         height:             _outerRadius * 2
         Layout.fillWidth:   true
-        anchors.top:        parent.top
         radius:             _outerRadius
         color:              qgcPal.window
 
@@ -57,7 +55,7 @@ ColumnLayout {
             vehicle:                globals.activeVehicle
             anchors.verticalCenter: parent.verticalCenter
         }
-    }  
+    }
 
     TerrainProgress {
         Layout.fillWidth: true
