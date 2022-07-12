@@ -119,6 +119,7 @@ Item {
         property real rightInset: visible ? parent.width - x : 0
     }
 
+
     PhotoVideoControl {
         id:                     photoVideoControl
         anchors.margins:        _toolsMargin
@@ -145,6 +146,13 @@ Item {
         ]
 
         property bool _verticalCenter: !QGroundControl.settingsManager.flyViewSettings.alternateInstrumentPanel.rawValue
+    }
+    
+    WinchControl {
+        id:                     winchControl
+        anchors.margins:        _toolsMargin
+        anchors.right:          parent.right
+        width:                  _rightPanelWidth
     }
 
     TelemetryValuesBar {

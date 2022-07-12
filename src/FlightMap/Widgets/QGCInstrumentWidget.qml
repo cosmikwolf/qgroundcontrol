@@ -18,13 +18,10 @@ import QGroundControl.FlightMap     1.0
 import QGroundControl.FlightDisplay 1.0
 import QGroundControl.Palette       1.0
 
-import QGroundControl.Vehicle       1.0
-import QtQuick.Window               2.2
-import MAVLink                      1.0
-
 ColumnLayout {
     id:         root
     spacing:    ScreenTools.defaultFontPixelHeight / 4
+    height:     availableHeight
 
     property real   _innerRadius:           (width - (_topBottomMargin * 3)) / 4
     property real   _outerRadius:           _innerRadius + _topBottomMargin
@@ -37,6 +34,7 @@ ColumnLayout {
         id:                 visualInstrument
         height:             _outerRadius * 2
         Layout.fillWidth:   true
+        anchors.top:        parent.top
         radius:             _outerRadius
         color:              qgcPal.window
 
@@ -60,111 +58,6 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
         }
     }  
-
-    enum WinchCommands {
-        RELEASE = 0,
-        DELIVER = 4,
-        RETRACT = 6
-    }
-    
-    property int _currentCommand:   -1
-    property int _WinchNodeID:      42
-    property int _MAVLink_CMD_ID:   42600
-
-    QGCButton {
-        id:                         winchEmergency
-        backRadius:                 10
-        showBorder:                 true
-        height:                     _outerRadius
-        Layout.fillWidth:           true
-        Layout.topMargin:           Window.height - 370
-        text:                       "Emergency release"
-        background:                 Rectangle {
-            color:                  "red"
-            radius:                 10
-            border.color:           "white"
-            border.width:           1
-        }
-        checkable:                  true
-        Image {
-            id:                     alert
-            source:                 "/qmlimages/Yield.svg"
-            height:                 parent.height
-            width:                  height
-            x:                      10
-        }
-        onClicked:  {
-            _currentCommand = QGCInstrumentWidget.WinchCommands.RELEASE;
-            winchDeliver.checked = winchRetract.checked = false;
-            if (checked) {slider.visible = true; slider.confirmText = qsTr("Emergency release winch")}
-            else {slider.visible = false}
-        }
-    }
-
-    QGCButton {
-        id:                         winchDeliver
-        backRadius:                 10
-        showBorder:                 true
-        height:                     _outerRadius
-        Layout.fillWidth:           true
-        text:                       "Deliver payload"
-        checkable:                  true
-        Image {
-            id:                     downArrow
-            source:                 "/qmlimages/ArrowDirection.svg"
-            height:                 parent.height
-            width:                  height
-            x:                      10
-            transform: Rotation {
-                origin.x:           downArrow.width/2
-                origin.y:           downArrow.height/2
-                angle:              180
-            }
-        }
-        onClicked: {
-            _currentCommand = QGCInstrumentWidget.WinchCommands.DELIVER;
-            winchEmergency.checked = winchRetract.checked = false;
-            if (checked) {slider.visible = true; slider.confirmText = qsTr("Perform payload drop")}
-            else {slider.visible = false}
-        }
-    }
-
-    QGCButton {
-        id:                         winchRetract
-        backRadius:                 10
-        showBorder:                 true
-        height:                     _outerRadius
-        Layout.fillWidth:           true
-        text:                       "Retract winch"
-        checkable:                  true
-        Image {
-            id:                     upArrow
-            source:                 "/qmlimages/ArrowDirection.svg"
-            height:                 parent.height
-            width:                  height
-            x:                      10
-        }
-        onClicked: {
-            _currentCommand = QGCInstrumentWidget.WinchCommands.RETRACT;
-            winchEmergency.checked = winchDeliver.checked = false;
-            if (checked) {slider.visible = true; slider.confirmText = qsTr("Perform winch retract")}
-            else {slider.visible = false}
-        }
-    }
-
-    SliderSwitch {
-        id:                             slider
-        property var _vehicle:          QGroundControl.multiVehicleManager.activeVehicle
-        visible:                        false
-        confirmText:                    qsTr("Not visible")
-        Layout.fillWidth:               true
-        onAccept: {
-            winchDeliver.checked = winchEmergency.checked = winchRetract.checked = false;
-            _vehicle.sendCommand(_WinchNodeID, _MAVLink_CMD_ID, 1, 1, _currentCommand, 1, 1);
-            _currentCommand = -1;
-            visible = false;
-        }
-    }
 
     TerrainProgress {
         Layout.fillWidth: true
