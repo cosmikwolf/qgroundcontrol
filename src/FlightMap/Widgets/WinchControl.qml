@@ -16,7 +16,6 @@ import MAVLink                      1.0
 
 Rectangle {
     id:                                     winchControlRect
-    
     // MAVLink definitions not yet implemented in QGC.
     // Using the actions from https://mavlink.io/en/messages/common.html#WINCH_ACTIONS
     enum WinchCommands {
@@ -149,15 +148,16 @@ Rectangle {
             winchDeliverBtn.checked = false;
             winchEmergencyBtn.checked = false;
             winchRetractBtn.checked = false;
-            if (_currentWinchCommand !== null && _vehicle !== null) {
+            if (_vehicle === null) {
+                console.log("Cannot send winch command, vehicle not connected.")
+            } else if (_currentWinchCommand === null) {
+                console.log("Cannot send winch command, no action selected.")
+            } else {
                 //MAV_COMP_ID_USER18(42) is the chosen component for winches
                 // since no winch defaults exist yet in the MAVLink standard.
                 // The QML MAVLink enum doesn't include MAV_CMD_DO_WINCH(42600).
                 // Setting it explicitly. See src/comm/QGCMAVLink.h for details.           
                 _vehicle.sendCommand(42, 42600, 1, 1, _currentWinchCommand, 1, 1);
-            }
-            else {
-                console.log("Cannot send winch command.")
             }
             _currentWinchCommand = null;
             visible = false;
