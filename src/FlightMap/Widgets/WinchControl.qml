@@ -28,6 +28,27 @@ Rectangle {
 
     Layout.fillWidth:               true
     anchors.bottom:                 parent.bottom
+
+    function uncheckInactiveButtons() {
+        winchEmergencyBtn.checked = false
+        winchDeliverBtn.checked = false
+        winchRetractBtn.checked = false
+ 
+        switch(slider._currentWinchCommand) {
+            case null:
+                return
+            case WinchControl.WinchCommands.WINCH_RELAXED:
+                winchEmergencyBtn.checked = true
+                break
+            case WinchControl.WinchCommands.WINCH_DELIVER:
+                winchDeliverBtn.checked = true
+                break
+            case WinchControl.WinchCommands.WINCH_RETRACT:
+                winchRetractBtn.checked = true
+                break
+        }
+    }
+
     QGCButton {
         id:                         winchEmergencyBtn
         backRadius:                 10
@@ -53,13 +74,12 @@ Rectangle {
         onClicked:  winchRelax()
 
         function winchRelax() {
-            winchDeliverBtn.checked = false;
-            winchRetractBtn.checked = false;
             if (checked) {
                 slider.enableWinchSlider(WinchControl.WinchCommands.WINCH_RELAXED, qsTr("Emergency release winch"))
             } else {
                 slider.disableWinchSlider()
             }
+            uncheckInactiveButtons()
         }
     }
 
@@ -87,13 +107,12 @@ Rectangle {
         onClicked:  winchDeliver()
         
         function winchDeliver() {
-            winchEmergencyBtn.checked = false;
-            winchRetractBtn.checked = false;
             if (checked) {
                 slider.enableWinchSlider(WinchControl.WinchCommands.WINCH_DELIVER, qsTr("Perform payload drop"))
             } else {
                 slider.disableWinchSlider()
             }
+            uncheckInactiveButtons()
         }
     }
 
@@ -116,13 +135,12 @@ Rectangle {
         onClicked: winchRetract()
         
         function winchRetract() {
-            winchEmergencyBtn.checked = false;
-            winchDeliverBtn.checked = false;
             if (checked) {
                 slider.enableWinchSlider(WinchControl.WinchCommands.WINCH_RETRACT, qsTr("Perform winch retract"))
             } else {
                 slider.disableWinchSlider()
             }
+            uncheckInactiveButtons()
         }
     }
 
@@ -151,9 +169,6 @@ Rectangle {
         }
 
         function sendWinchCommand() {
-            winchDeliverBtn.checked = false;
-            winchEmergencyBtn.checked = false;
-            winchRetractBtn.checked = false;
             if (_vehicle === null) {
                 console.log("Cannot send winch command, vehicle not connected.")
             } else if (_currentWinchCommand === null) {
@@ -163,10 +178,12 @@ Rectangle {
                 // since no winch defaults exist yet in the MAVLink standard.
                 // The QML MAVLink enum doesn't include MAV_CMD_DO_WINCH(42600).
                 // Setting it explicitly. See src/comm/QGCMAVLink.h for details.           
-                _vehicle.sendCommand(42, 42600, 1, 1, _currentWinchCommand, 1, 1);
+                _vehicle.sendCommand(42, 42600, 1, 1, _currentWinchCommand, 1, 1)
+                disableWinchSlider()
+                uncheckInactiveButtons()
             }
-            disableWinchSlider()
         }
     }
 }
+
 
