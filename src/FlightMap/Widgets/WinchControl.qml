@@ -53,14 +53,12 @@ Rectangle {
         onClicked:  winchRelax()
 
         function winchRelax() {
-            slider._currentWinchCommand = WinchControl.WinchCommands.WINCH_RELAXED;
             winchDeliverBtn.checked = false;
             winchRetractBtn.checked = false;
             if (checked) {
-                slider.visible = true;
-                slider.confirmText = qsTr("Emergency release winch")}
-            else {
-                slider.visible = false
+                slider.enableWinchSlider(WinchControl.WinchCommands.WINCH_RELAXED, qsTr("Emergency release winch"))
+            } else {
+                slider.disableWinchSlider()
             }
         }
     }
@@ -89,14 +87,12 @@ Rectangle {
         onClicked:  winchDeliver()
         
         function winchDeliver() {
-            slider._currentWinchCommand = WinchControl.WinchCommands.WINCH_DELIVER;
             winchEmergencyBtn.checked = false;
             winchRetractBtn.checked = false;
             if (checked) {
-                slider.visible = true;
-                slider.confirmText = qsTr("Perform payload drop")}
-            else {
-                slider.visible = false
+                slider.enableWinchSlider(WinchControl.WinchCommands.WINCH_DELIVER, qsTr("Perform payload drop"))
+            } else {
+                slider.disableWinchSlider()
             }
         }
     }
@@ -120,14 +116,12 @@ Rectangle {
         onClicked: winchRetract()
         
         function winchRetract() {
-            slider._currentWinchCommand = WinchControl.WinchCommands.WINCH_RETRACT;
             winchEmergencyBtn.checked = false;
             winchDeliverBtn.checked = false;
             if (checked) {
-                slider.visible = true;
-                slider.confirmText = qsTr("Perform winch retract")}
-            else {
-                slider.visible = false
+                slider.enableWinchSlider(WinchControl.WinchCommands.WINCH_RETRACT, qsTr("Perform winch retract"))
+            } else {
+                slider.disableWinchSlider()
             }
         }
     }
@@ -144,6 +138,18 @@ Rectangle {
         property var    _currentWinchCommand:   null
         onAccept: sendWinchCommand()
         
+        function enableWinchSlider(command, message) {
+            visible = true
+            confirmText = message
+            _currentWinchCommand = command
+        }
+
+        function disableWinchSlider() {
+            visible = false
+            confirmText = qsTr("Not visible")
+            _currentWinchCommand = null
+        }
+
         function sendWinchCommand() {
             winchDeliverBtn.checked = false;
             winchEmergencyBtn.checked = false;
@@ -159,8 +165,7 @@ Rectangle {
                 // Setting it explicitly. See src/comm/QGCMAVLink.h for details.           
                 _vehicle.sendCommand(42, 42600, 1, 1, _currentWinchCommand, 1, 1);
             }
-            _currentWinchCommand = null;
-            visible = false;
+            disableWinchSlider()
         }
     }
 }
