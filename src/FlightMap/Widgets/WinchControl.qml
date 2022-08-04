@@ -76,10 +76,10 @@ Rectangle {
         function winchRelax() {
             if (checked) {
                 slider.enableWinchSlider(WinchControl.WinchCommands.WINCH_RELAXED, qsTr("Emergency release winch"))
+                uncheckInactiveButtons()
             } else {
                 slider.disableWinchSlider()
             }
-            uncheckInactiveButtons()
         }
     }
 
@@ -109,10 +109,10 @@ Rectangle {
         function winchDeliver() {
             if (checked) {
                 slider.enableWinchSlider(WinchControl.WinchCommands.WINCH_DELIVER, qsTr("Perform payload drop"))
+                uncheckInactiveButtons()
             } else {
                 slider.disableWinchSlider()
             }
-            uncheckInactiveButtons()
         }
     }
 
@@ -137,10 +137,10 @@ Rectangle {
         function winchRetract() {
             if (checked) {
                 slider.enableWinchSlider(WinchControl.WinchCommands.WINCH_RETRACT, qsTr("Perform winch retract"))
+                uncheckInactiveButtons()
             } else {
                 slider.disableWinchSlider()
             }
-            uncheckInactiveButtons()
         }
     }
 
