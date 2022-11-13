@@ -1,0 +1,146 @@
+name: Converted Workflow
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  build:
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        os:
+          - ubuntu-18.04
+    steps:
+      - name: Install dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: >-
+          sudo apt-get update
+
+          sudo apt-get install -y libgstreamer-plugins-base1.0-dev
+          libgstreamer1.0-0:amd64 libgstreamer1.0-dev libudev-dev
+          speech-dispatcher wget
+      - uses: actions/checkout@v2
+      - run: 'cd ${TRAVIS_BUILD_DIR}'
+      - run: git fetch --unshallow
+      - run: git fetch --all --tags
+      - run: >-
+          if [ "${TRAVIS_OS_NAME}" = "linux" ]; then export JOBS=$((`cat
+          /proc/cpuinfo | grep -c ^processor`+1)); elif [ "${TRAVIS_OS_NAME}" =
+          "osx" ]; then export JOBS=$((`sysctl -n hw.ncpu`+1)); fi
+      - run: >-
+          if [ "${SPEC}" = "linux-g++-64" ]; then sudo apt-get install -y
+          libsdl2-dev libxkbcommon-x11-0; fi
+      - run: >-
+          if [ "${SPEC}" = "linux-g++-64" ]; then wget --quiet
+          https://s3-us-west-2.amazonaws.com/qgroundcontrol/dependencies/Qt5.12.6-gcc_64-min.tar.bz2
+          && tar jxf Qt5.12.6-gcc_64-min.tar.bz2 -C /tmp && export
+          PATH=/tmp/Qt5.12-gcc_64/5.12.6/gcc_64/bin:$PATH ; fi
+      - run: >-
+          if [ "${SPEC}" = "android-clang" ]; then wget --quiet
+          https://gstreamer.freedesktop.org/data/pkg/android/1.18.5/gstreamer-1.0-android-universal-1.18.5.tar.xz
+          && mkdir gstreamer-1.0-android-universal-1.18.5 && tar xf
+          gstreamer-1.0-android-universal-1.18.5.tar.xz -C
+          gstreamer-1.0-android-universal-1.18.5 && wget --quiet
+          https://dl.google.com/android/repository/android-ndk-r20-linux-x86_64.zip
+          && unzip android-ndk-r20-linux-x86_64.zip > /dev/null && export
+          ANDROID_NDK_ROOT=`pwd`/android-ndk-r20 && export
+          ANDROID_SDK_ROOT=/usr/local/android-sdk && export
+          PATH=`pwd`/android-ndk-r20:$PATH ; fi
+      - run: >-
+          if [[ "${SPEC}" = "android-clang" && "${BITNESS}" = "64" ]]; then wget
+          --quiet
+          https://s3-us-west-2.amazonaws.com/qgroundcontrol/dependencies/Qt5.12.6-android_arm64_v8a-min.tar.bz2
+          && tar jxf Qt5.12.6-android_arm64_v8a-min.tar.bz2 -C /tmp && export
+          PATH=/tmp/Qt5.12-android_arm64_v8a/5.12.6/android_arm64_v8a/bin:$PATH
+          ; fi
+      - run: >-
+          if [[ "${SPEC}" = "android-clang" && "${BITNESS}" = "32" ]]; then wget
+          --quiet
+          https://s3-us-west-2.amazonaws.com/qgroundcontrol/dependencies/Qt5.12.6-android_armv7-min.tar.bz2
+          && tar jxf Qt5.12.6-android_armv7-min.tar.bz2 -C /tmp && export
+          PATH=/tmp/Qt5.12-android_armv7/5.12.6/android_armv7/bin:$PATH ; fi
+      - run: >-
+          if [ "${SPEC}" = "macx-clang" ]; then wget --quiet
+          https://s3-us-west-2.amazonaws.com/qgroundcontrol/dependencies/Qt5.12.6-clang_64-min.tar.bz2
+          && tar jxf Qt5.12.6-clang_64-min.tar.bz2 -C /tmp ; fi
+      - run: >-
+          if [[ "${SPEC}" = "macx-clang" ]]; then wget --quiet
+          https://qgroundcontrol.s3-us-west-2.amazonaws.com/dependencies/gstreamer-osx-1.18.1.tar.bz2
+          && sudo tar zxf gstreamer-osx-1.18.1.tar.bz2 -C /Library/Frameworks ;
+          fi
+      - run: >-
+          if [ "${SPEC}" = "macx-clang" ]; then export
+          QT_DIR=Qt5.12-clang_64/5.12.6/clang_64 && export
+          QT_QPA_PLATFORM_PLUGIN_PATH=/tmp/$QT_DIR/plugins && export
+          QML2_IMPORT_PATH=/tmp/$QT_DIR/qml && export
+          PATH=/tmp/$QT_DIR/bin:$PATH ; fi
+      - run: >-
+          if [ "${SPEC}" = "macx-ios-clang" ]; then wget --quiet
+          https://s3-us-west-2.amazonaws.com/qgroundcontrol/dependencies/Qt5.9.3-ios-min.tar.bz2
+          ; fi
+      - run: >-
+          if [ "${SPEC}" = "macx-ios-clang" ]; then tar jxf
+          Qt5.9.3-ios-min.tar.bz2 -C /tmp && export
+          IOS_CCACHE_CC=`/usr/bin/xcrun -sdk iphoneos -find clang` && export
+          IOS_CCACHE_CXX=`/usr/bin/xcrun -sdk iphoneos -find clang++` && export
+          PATH=/tmp/Qt5.9-ios/5.9.3/ios/bin:$PATH ; fi
+      - run: 'cd ${TRAVIS_BUILD_DIR}'
+      - run: >-
+          if [[ "${SPEC}" = "android-clang" && "${CONFIG}" = "installer" && -z
+          ${ANDROID_STOREPASS} ]]; then export CONFIG=release; fi
+      - run: >-
+          if [ "${SPEC}" = "android-clang"  && "${TRAVIS_PULL_REQUEST}" =
+          "false" ]]; then git remote set-branches origin 'master' && git fetch
+          --tags origin master && ./tools/update_android_version.sh ${BITNESS}
+          ${TRAVIS_BRANCH}; fi
+      - run: >-
+          if [[ "${SPEC}" = "macx-clang" && "${TRAVIS_PULL_REQUEST}" = "false"
+          ]]; then export CODESIGN=codesign; fi
+      - run: >-
+          if [[ "${SPEC}" = "macx-clang" && "${TRAVIS_PULL_REQUEST}" = "false"
+          ]]; then openssl aes-256-cbc -K $MAC_CERT_KEY -iv $MAC_CERT_IV -in
+          deploy/MacCertificates.p12.enc -out deploy/MacCertificates.p12 -d; fi
+      - run: >-
+          if [[ "${SPEC}" = "macx-clang" && "${TRAVIS_PULL_REQUEST}" = "false"
+          ]]; then source deploy/MacImportCert.sh; fi
+      - run: 'mkdir ${SHADOW_BUILD_DIR} && cd ${SHADOW_BUILD_DIR}'
+      - run: >-
+          if [ "${TRAVIS_TAG}" ]; then echo "Stable build" && export
+          STABLE_OR_DAILY=StableBuild; else echo "Daily build" && export
+          STABLE_OR_DAILY=DailyBuild; fi
+      - run: >-
+          qmake -r ${TRAVIS_BUILD_DIR}/qgroundcontrol.pro CONFIG+=${CONFIG}
+          CONFIG+=${STABLE_OR_DAILY} CONFIG+=${CODESIGN} -spec ${SPEC};
+      - run: >-
+          if [ "${SPEC}" != "macx-ios-clang" ]; then make -j$JOBS; else
+          xcodebuild -IDEBuildOperationMaxNumberOfConcurrentCompileTasks=$JOBS
+          -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+          | xcpretty -c && $(exit ${PIPESTATUS[0]}); fi
+      - run: >-
+          if [[ "${SPEC}" = "linux-g++-64" && "${CONFIG}" = "debug" ]]; then
+          mkdir -p ~/.config/QtProject/ && cp
+          ${TRAVIS_BUILD_DIR}/test/qtlogging.ini ~/.config/QtProject/ && export
+          QT_FATAL_WARNINGS=1 && ./staging/qgroundcontrol-start.sh --unittest;
+          fi
+      - run: 'cd ${TRAVIS_BUILD_DIR}'
+      - run: >-
+          if [ "${TRAVIS_TAG}" ]; then
+          GOOGLE_PLAY_PKG=org.mavlink.qgroundcontrol; elif [ "${TRAVIS_BRANCH}"
+          = "master" ]; then GOOGLE_PLAY_PKG=org.mavlink.qgroundcontrolbeta;
+          else GOOGLE_PLAY_PKG=none; fi
+      - run: >-
+          if [[ "${SPEC}" = "google-play-upload" && "${TRAVIS_PULL_REQUEST}" =
+          "false" && "${GOOGLE_PLAY_PKG}" != "none" ]]; then wget --quiet
+          https://s3-us-west-2.amazonaws.com/qgroundcontrol/builds/${TRAVIS_BRANCH}/QGroundControl32.apk
+          && wget --quiet
+          https://s3-us-west-2.amazonaws.com/qgroundcontrol/builds/${TRAVIS_BRANCH}/QGroundControl64.apk
+          && pip install --user --upgrade oauth2client && pip install --user
+          google-api-python-client pyopenssl ndg-httpsclient pyasn1 && openssl
+          aes-256-cbc -K $encrypted_25db6eb7c3fd_key -iv
+          $encrypted_25db6eb7c3fd_iv -in
+          android/Google_Play_Android_Developer-4432a3c4f5d1.json.enc -out
+          android/Google_Play_Android_Developer-4432a3c4f5d1.json -d &&
+          ./deploy/GooglePlayUpload.py ${GOOGLE_PLAY_PKG}; fi
