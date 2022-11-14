@@ -1,4 +1,4 @@
-name: MacOS Release
+name: Linux Release
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - 'v*'
   pull_request:
     branches:
-      - '*'
+    - '*'
 
 defaults:
   run:
@@ -18,12 +18,12 @@ defaults:
 env:
   SOURCE_DIR:   ${{ github.workspace }}
   QT_VERSION:   5.15.2
-  ARTIFACT:     QGroundControl.dmg
+  ARTIFACT:     QGroundControl.AppImage
   BUILD_TYPE:   ${{ fromJSON('["DailyBuild", "StableBuild"]')[ github.ref_type == 'tag' || contains(github.ref, 'Stable_' ) ] }}
 
 jobs:
   build:
-    runs-on:  macos-latest
+    runs-on:  ubuntu-20.04
 
     steps:
       - name: Checkout repo
@@ -40,22 +40,23 @@ jobs:
         uses: jurplel/install-qt-action@v3
         with:
           version:      ${{ env.QT_VERSION }}
-          host:         mac
+          host:         linux
           target:       desktop
           dir:          ${{ runner.temp }}
           modules:      qtcharts
-          setup-python: false
+          setup-python: true
+
+      - name: Install QGC source dependencies
+        run:  sudo apt-get install -y libsdl2-dev
 
       - name: Install Gstreamer
-        run: |
-            wget https://gstreamer.freedesktop.org/data/pkg/osx/1.18.6/gstreamer-1.0-devel-1.18.6-x86_64.pkg
-            wget https://gstreamer.freedesktop.org/data/pkg/osx/1.18.6/gstreamer-1.0-1.18.6-x86_64.pkg
-            for package in *.pkg ;
-              do sudo installer -verbose -pkg "$package" -target /
-            done
+        run:  sudo apt-get install -y libgstreamer-plugins-base1.0-dev libgstreamer1.0-0:amd64 libgstreamer1.0-dev
 
       - name: Install ccache
-        run:  brew install ccache
+        run:  sudo apt-get install ccache
+
+      - name: Install post-link dependencies
+        run:  sudo apt-get install -y binutils patchelf
 
       - name: Prepare ccache timestamp
         id: ccache_cache_timestamp
@@ -83,12 +84,15 @@ jobs:
       - name: Build
         working-directory: ${{ runner.temp }}/shadow_build_dir
         run:  |
-              export JOBS=$((`sysctl -n hw.ncpu`+1))
               qmake -r ${SOURCE_DIR}/qgroundcontrol.pro CONFIG+=installer CONFIG+=${BUILD_TYPE}
-              make -j$JOBS
+              make -j2
 
       - name: ccache post-run
         run:  ccache -s
+
+      - name: Create AppImage
+        working-directory:  ${{ runner.temp }}/shadow_build_dir
+        run:                ${SOURCE_DIR}/deploy/create_linux_appimage.sh ${SOURCE_DIR} ./staging ./package;
 
       - name: Save artifact
         uses: actions/upload-artifact@master
